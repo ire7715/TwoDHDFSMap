@@ -1,4 +1,4 @@
-import TwoDHDFS
+from TwoDHDFSMap.TwoDHDFSMap import TwoDHDFSMap
 from pyspark import SparkContext
 
 def main():

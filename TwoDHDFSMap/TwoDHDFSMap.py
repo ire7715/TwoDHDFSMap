@@ -27,7 +27,7 @@ class TwoDHDFSMap(object):
         self.__map[key] = rdd.collectAsMap()
       except:
         # no such an index
-        return None
+        self.__map[key] = dict()
     return self.__map[key]
 
   def __setitem__(self, key, value):
