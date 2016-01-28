@@ -1,10 +1,10 @@
 class TwoDHDFSMap(object):
-  def __init__(self, sc, hdfsURI, \
+  def __init__(self, sc, hdfsURI=None, \
     inputFormatClass="org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat", \
     outputFormatClass="org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat", \
     keyClass="org.apache.hadoop.io.Text", valueClass="org.apache.hadoop.io.IntWritable", \
     outURI=None):
-    self.__hdfsURI = str(hdfsURI)
+    self.__hdfsURI = str(hdfsURI) if hdfsURI else None
     self.__sc = sc
     self.__map = dict()
     self.__ioOptions = dict()
@@ -12,7 +12,7 @@ class TwoDHDFSMap(object):
     self.__ioOptions["outputFormatClass"] = str(outputFormatClass)
     self.__ioOptions["keyClass"] = str(keyClass)
     self.__ioOptions["valueClass"] = str(valueClass)
-    self.__outURI = str(outURI)
+    self.__outURI = str(outURI) if outURI else None
 
   @property
   def hdfsURI(self):
@@ -20,13 +20,16 @@ class TwoDHDFSMap(object):
 
   def __getitem__(self, key):
     if key not in self.__map:
-      try:
-        rdd = self.__sc.newAPIHadoopFile(self.__hdfsURI + "/" + str(key), \
-          self.__ioOptions["inputFormatClass"], \
-          self.__ioOptions["keyClass"], self.__ioOptions["valueClass"])
-        self.__map[key] = rdd.collectAsMap()
-      except:
-        # no such an index
+      if self.__hdfsURI:
+        try:
+          rdd = self.__sc.newAPIHadoopFile(self.__hdfsURI + "/" + str(key), \
+            self.__ioOptions["inputFormatClass"], \
+            self.__ioOptions["keyClass"], self.__ioOptions["valueClass"])
+          self.__map[key] = rdd.collectAsMap()
+        except:
+          # no such an index
+          self.__map[key] = dict()
+      else:
         self.__map[key] = dict()
     return self.__map[key]
 
