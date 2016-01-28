@@ -4,15 +4,15 @@ class TwoDHDFSMap(object):
     outputFormatClass="org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat", \
     keyClass="org.apache.hadoop.io.Text", valueClass="org.apache.hadoop.io.IntWritable", \
     outURI=None):
-    self.__hdfsURI = hdfsURI
+    self.__hdfsURI = str(hdfsURI)
     self.__sc = sc
     self.__map = dict()
     self.__ioOptions = dict()
-    self.__ioOptions["inputFormatClass"] = inputFormatClass
-    self.__ioOptions["outputFormatClass"] = outputFormatClass
-    self.__ioOptions["keyClass"] = keyClass
-    self.__ioOptions["valueClass"] = valueClass
-    self.__outURI = outURI
+    self.__ioOptions["inputFormatClass"] = str(inputFormatClass)
+    self.__ioOptions["outputFormatClass"] = str(outputFormatClass)
+    self.__ioOptions["keyClass"] = str(keyClass)
+    self.__ioOptions["valueClass"] = str(valueClass)
+    self.__outURI = str(outURI)
 
   @property
   def hdfsURI(self):
@@ -21,7 +21,7 @@ class TwoDHDFSMap(object):
   def __getitem__(self, key):
     if key not in self.__map:
       try:
-        rdd = self.__sc.newAPIHadoopFile(self.__hdfsURI + "/" + key, \
+        rdd = self.__sc.newAPIHadoopFile(self.__hdfsURI + "/" + str(key), \
           self.__ioOptions["inputFormatClass"], \
           self.__ioOptions["keyClass"], self.__ioOptions["valueClass"])
         self.__map[key] = rdd.collectAsMap()
@@ -42,6 +42,6 @@ class TwoDHDFSMap(object):
     if self.__outURI:
       for key, value in self.__map.iteritems():
         rdd = self.__sc.parallelize(value.items())
-        rdd.saveAsNewAPIHadoopFile(self.__outURI + "/" + key, \
+        rdd.saveAsNewAPIHadoopFile(self.__outURI + "/" + str(key), \
           self.__ioOptions["outputFormatClass"], \
           self.__ioOptions["keyClass"], self.__ioOptions["valueClass"])
