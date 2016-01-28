@@ -1,3 +1,6 @@
+import TwoDHDFS
+from pyspark import SparkContext
+
 def main():
   HDFS_URI = "hdfs://hdfs.domain.cc/folder"
   sc = SparkContext()

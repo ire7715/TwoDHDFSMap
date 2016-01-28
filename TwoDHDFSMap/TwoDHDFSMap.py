@@ -1,5 +1,3 @@
-from pyspark import SparkContext
-
 class TwoDHDFSMap(object):
   def __init__(self, sc, hdfsURI, \
     inputFormatClass="org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat", \
