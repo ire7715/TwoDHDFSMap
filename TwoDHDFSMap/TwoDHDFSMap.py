@@ -1,6 +1,6 @@
-from hdfs import Config
-
 class TwoDHDFSMap(object):
+  __SLOT_SIZE = 100
+
   def __init__(self, sc, hdfsURI=None, \
     inputFormatClass="org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat", \
     outputFormatClass="org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat", \
@@ -17,34 +17,41 @@ class TwoDHDFSMap(object):
     self.__outURI = str(outURI) if outURI else None
 
     if self.__hdfsURI:
-      self.__client = Config.get_client(hdfsConfigAlias)
-      tempKeys = self.__client.list(self.__hdfsURI + "/") # raise hdfs.util.HdfsError when directory doesn't exist
-      self.__existingKeys = map(lambda direct: direct.split("/")[-1], tempKeys)
-    else:
-      self.__existingKeys = None
+      self.__slotsRead = [False] * self.__SLOT_SIZE
 
   @property
   def hdfsURI(self):
       return self.__hdfsURI
 
+  def __readFromHash(self, keyHash):
+    rdd = self.__sc.pickleFile(self.__hdfsURI + "/" + str(keyHash))
+    # dataBlock = rdd.combineByKey(lambda v: [v], lambda c, v: c + [v], \
+    #   lambda c1, c2: c1 + c2).collectAsMap()
+    dataBlock = rdd.collectAsMap()
+    for key, tuples in dataBlock.iteritems():
+      self.__map[key] = dict(tuples)
+    self.__slotsRead[keyHash] = True
+
   def __getitem__(self, key):
-    if "/" in key:
+    if isinstance(key, str) and "/" in key:
       raise KeyError("A slash(/) in the key(\"" + key + "\") is not allowed.")
     if key not in self.__map:
-      if self.__hdfsURI and key in self.__existingKeys:
+      keyHash = self.__keyHash(key)
+      if self.__hdfsURI and not self.__slotsRead[keyHash]:
         try:
-          rdd = self.__sc.newAPIHadoopFile(self.__hdfsURI + "/" + str(key), \
-            self.__ioOptions["inputFormatClass"], \
-            self.__ioOptions["keyClass"], self.__ioOptions["valueClass"])
-          self.__map[key] = rdd.collectAsMap()
+          self.__readFromHash(keyHash)
+          if key not in self.__map:
+            self.__map[key] = dict()
         except:
           # no such an index
+          self.__slotsRead[keyHash] = True
           self.__map[key] = dict()
       else:
         self.__map[key] = dict()
     return self.__map[key]
 
   def __setitem__(self, key, value):
+    self[key]
     self.__map[key] = value
     return value
 
@@ -52,16 +59,20 @@ class TwoDHDFSMap(object):
     self[key]
     return key in self.__map
 
-  def __del__(self):
+  def save(self):
     if self.__outURI:
+      distribution = [[]] * self.__SLOT_SIZE
       for key, value in self.__map.iteritems():
-        rdd = self.__sc.parallelize(value.items())
-        rdd.saveAsNewAPIHadoopFile(self.__outURI + "/" + str(key), \
-          self.__ioOptions["outputFormatClass"], \
-          self.__ioOptions["keyClass"], self.__ioOptions["valueClass"])
+        keyHash = self.__keyHash(key)
+        distribution[keyHash].append((key, value))
 
-  def keys(self):
-    if self.__existingKeys:
-      return set().union(self.__map.keys(), self.__existingKeys)
-    else:
-      return set(self.__map.keys())
+      for index, block in enumerate(distribution):
+        self.__sc.parallelize(block) \
+        .saveAsPickleFile(self.__outURI + "/" + str(index))
+
+  def __del__(self):
+    self.save()
+
+  def __keyHash(self, key):
+    # TODO define a proper slot size and a proper hash funciton
+    return hash(key) % self.__SLOT_SIZE
