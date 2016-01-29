@@ -68,3 +68,13 @@ class TwoDHDFSMap(object):
   def __keyHash(self, key):
     # TODO define a proper slot size and a proper hash funciton
     return hash(key) % self.__SLOT_SIZE
+
+  def retrieveAll(self):
+    for i in xrange(self.__SLOT_SIZE): # touch all indices
+      self[i]
+      if not bool(self.__map[i]): # delete the touched one if it is empty
+        self.__map.pop(i)
+
+  def keys(self):
+    self.retrieveAll()
+    return self.__map.keys()
