@@ -61,8 +61,9 @@ class TwoDHDFSMap(object):
         self.__sc.parallelize(block) \
         .saveAsPickleFile(self.__outURI + "/" + str(index))
 
-  def __del__(self):
-    self.save()
+  # save only when it is explicitly called
+  # def __del__(self):
+  #   self.save()
 
   def __keyHash(self, key):
     # TODO define a proper slot size and a proper hash funciton
