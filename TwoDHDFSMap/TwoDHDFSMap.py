@@ -27,7 +27,7 @@ class TwoDHDFSMap(object):
 
   def __getitem__(self, key):
     if "/" in key:
-      raise KeyError("A slash(/) in the key is not allowed.")
+      raise KeyError("A slash(/) in the key(\"" + key + "\") is not allowed.")
     if key not in self.__map:
       if self.__hdfsURI and key in self.__existingKeys:
         try:
@@ -58,5 +58,5 @@ class TwoDHDFSMap(object):
           self.__ioOptions["outputFormatClass"], \
           self.__ioOptions["keyClass"], self.__ioOptions["valueClass"])
 
-  def keys():
+  def keys(self):
     return set().union(self.__map, self.__existingKeys)
