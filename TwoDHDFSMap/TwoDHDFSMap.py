@@ -1,19 +1,10 @@
 class TwoDHDFSMap(object):
   __SLOT_SIZE = 100
 
-  def __init__(self, sc, hdfsURI=None, \
-    inputFormatClass="org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat", \
-    outputFormatClass="org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat", \
-    keyClass="org.apache.hadoop.io.Text", valueClass="org.apache.hadoop.io.IntWritable", \
-    outURI=None, hdfsConfigAlias=None):
+  def __init__(self, sc, hdfsURI=None, outURI=None):
     self.__hdfsURI = str(hdfsURI) if hdfsURI else None
     self.__sc = sc
     self.__map = dict()
-    self.__ioOptions = dict()
-    self.__ioOptions["inputFormatClass"] = str(inputFormatClass)
-    self.__ioOptions["outputFormatClass"] = str(outputFormatClass)
-    self.__ioOptions["keyClass"] = str(keyClass)
-    self.__ioOptions["valueClass"] = str(valueClass)
     self.__outURI = str(outURI) if outURI else None
 
     if self.__hdfsURI:
