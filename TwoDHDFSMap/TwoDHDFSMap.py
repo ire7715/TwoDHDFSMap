@@ -57,3 +57,6 @@ class TwoDHDFSMap(object):
         rdd.saveAsNewAPIHadoopFile(self.__outURI + "/" + str(key), \
           self.__ioOptions["outputFormatClass"], \
           self.__ioOptions["keyClass"], self.__ioOptions["valueClass"])
+
+  def keys():
+    return set().union(self.__map, self.__existingKeys)
