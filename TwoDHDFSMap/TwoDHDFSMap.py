@@ -20,6 +20,8 @@ class TwoDHDFSMap(object):
       self.__client = Config.get_client(hdfsConfigAlias)
       tempKeys = self.__client.list(self.__hdfsURI + "/") # raise hdfs.util.HdfsError when directory doesn't exist
       self.__existingKeys = map(lambda direct: direct.split("/")[-1], tempKeys)
+    else:
+      self.__existingKeys = None
 
   @property
   def hdfsURI(self):
@@ -59,4 +61,7 @@ class TwoDHDFSMap(object):
           self.__ioOptions["keyClass"], self.__ioOptions["valueClass"])
 
   def keys(self):
-    return set().union(self.__map, self.__existingKeys)
+    if self.__existingKeys:
+      return set().union(self.__map.keys(), self.__existingKeys)
+    else:
+      return set(self.__map.keys())
