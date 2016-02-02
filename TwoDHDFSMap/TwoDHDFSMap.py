@@ -6,9 +6,9 @@ class TwoDHDFSMap(object):
     self.__sc = sc
     self.__map = dict()
     self.__outURI = str(outURI) if outURI else None
+    self.__BUCKET_SIZE = bucketSize or self.__BUCKET_SIZE
 
     if self.__hdfsURI:
-      self.__BUCKET_SIZE = bucketSize or self.__BUCKET_SIZE
       self.__slotsRead = [False] * self.__BUCKET_SIZE
 
   @property
@@ -51,13 +51,16 @@ class TwoDHDFSMap(object):
     self[key]
     return key in self.__map
 
+  def __exportBuckets(self):
+    distribution = [[] for i in xrange(self.__BUCKET_SIZE)]
+    for key, value in self.__map.iteritems():
+      keyHash = self.__keyHash(key)
+      distribution[keyHash].append((key, value))
+    return distribution
+
   def save(self):
     if self.__outURI:
-      distribution = [[] for i in xrange(self.__BUCKET_SIZE)]
-      for key, value in self.__map.iteritems():
-        keyHash = self.__keyHash(key)
-        distribution[keyHash].append((key, value))
-
+      distribution = self.__exportBuckets()
       for index, block in enumerate(distribution):
         self.__sc.parallelize(block) \
         .saveAsPickleFile(self.__outURI + "/" + str(index))
