@@ -1,5 +1,5 @@
 class TwoDHDFSMap(object):
-  __SLOT_SIZE = 100
+  __SLOT_SIZE = 101 # prime bucket size is better
 
   def __init__(self, sc, hdfsURI=None, outURI=None):
     self.__hdfsURI = str(hdfsURI) if hdfsURI else None
