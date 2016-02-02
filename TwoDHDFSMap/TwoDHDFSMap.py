@@ -1,3 +1,5 @@
+import pandas as pd
+
 class TwoDHDFSMap(object):
   __BUCKET_SIZE = 101 # prime bucket size is better
 
@@ -82,3 +84,7 @@ class TwoDHDFSMap(object):
   def keys(self):
     self.retrieveAll()
     return self.__map.keys()
+
+  def toDataFrame(self):
+    self.retrieveAll()
+    return pd.DataFrame(self.__map).T.fillna(0)
