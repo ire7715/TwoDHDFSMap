@@ -27,8 +27,6 @@ class TwoDHDFSMap(object):
     self.__slotsRead[keyHash] = True
 
   def __getitem__(self, key):
-    if isinstance(key, str) and "/" in key:
-      raise KeyError("A slash(/) in the key(\"" + key + "\") is not allowed.")
     if key not in self.__map:
       keyHash = self.__keyHash(key)
       if self.__hdfsURI and not self.__slotsRead[keyHash]:
