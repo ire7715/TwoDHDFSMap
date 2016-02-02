@@ -1,14 +1,15 @@
 class TwoDHDFSMap(object):
-  __SLOT_SIZE = 101 # prime bucket size is better
+  __BUCKET_SIZE = 101 # prime bucket size is better
 
-  def __init__(self, sc, hdfsURI=None, outURI=None):
+  def __init__(self, sc, hdfsURI=None, outURI=None, bucketSize=0):
     self.__hdfsURI = str(hdfsURI) if hdfsURI else None
     self.__sc = sc
     self.__map = dict()
     self.__outURI = str(outURI) if outURI else None
 
     if self.__hdfsURI:
-      self.__slotsRead = [False] * self.__SLOT_SIZE
+      self.__BUCKET_SIZE = bucketSize or self.__BUCKET_SIZE
+      self.__slotsRead = [False] * self.__BUCKET_SIZE
 
   @property
   def hdfsURI(self):
@@ -52,7 +53,7 @@ class TwoDHDFSMap(object):
 
   def save(self):
     if self.__outURI:
-      distribution = [[]] * self.__SLOT_SIZE
+      distribution = [[] for i in xrange(self.__BUCKET_SIZE)]
       for key, value in self.__map.iteritems():
         keyHash = self.__keyHash(key)
         distribution[keyHash].append((key, value))
@@ -67,10 +68,10 @@ class TwoDHDFSMap(object):
 
   def __keyHash(self, key):
     # TODO define a proper slot size and a proper hash funciton
-    return hash(key) % self.__SLOT_SIZE
+    return hash(key) % self.__BUCKET_SIZE
 
   def retrieveAll(self):
-    for i in xrange(self.__SLOT_SIZE): # touch all indices
+    for i in xrange(self.__BUCKET_SIZE): # touch all indices
       self[i]
       if not bool(self.__map[i]): # delete the touched one if it is empty
         self.__map.pop(i)
