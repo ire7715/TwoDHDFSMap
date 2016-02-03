@@ -85,4 +85,4 @@ class TwoDHDFSMap(object):
 
   def toDataFrame(self):
     self.retrieveAll()
-    return pd.DataFrame(self.__map).T.fillna(0)
+    return pd.DataFrame(self.__map).fillna(0)
