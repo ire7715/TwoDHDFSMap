@@ -51,6 +51,9 @@ class TwoDHDFSMap(object):
     self[key]
     return key in self.__map
 
+  def iteritems(self):
+    return self.__map.iteritems()
+
   def __exportBuckets(self):
     distribution = [[] for i in xrange(self.__BUCKET_SIZE)]
     for key, value in self.__map.iteritems():
@@ -60,6 +63,7 @@ class TwoDHDFSMap(object):
 
   def save(self):
     if self.__outURI:
+      self.retrieveAll()
       distribution = self.__exportBuckets()
       for index, block in enumerate(distribution):
         self.__sc.parallelize(block) \
