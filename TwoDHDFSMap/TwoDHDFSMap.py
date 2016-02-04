@@ -76,7 +76,7 @@ class TwoDHDFSMap(object):
         distribution[keyHash].append(((key1, key2), value))
     return distribution
 
-  def saveAs2DRDD(self):
+  def saveAsRDDMap(self):
     if self.__outURI:
       self.retrieveAll()
       distribution = self.__export2DBuckets()
