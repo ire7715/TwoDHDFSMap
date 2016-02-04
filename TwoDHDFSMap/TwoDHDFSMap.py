@@ -69,6 +69,22 @@ class TwoDHDFSMap(object):
         self.__sc.parallelize(block) \
         .saveAsPickleFile(self.__outURI + "/" + str(index))
 
+  def __export2DBuckets(self):
+    distribution = [[] for i in xrange(self.__BUCKET_SIZE)]
+    for key1, secDict in self.__map.iteritems():
+      keyHash = self.__keyHash(key1)
+      for key2, value in secDict.iteritems():
+        distribution[keyHash].append(((key1, key2), value))
+    return distribution
+
+  def saveAs2DRDD(self):
+    if self.__outURI:
+      self.retrieveAll()
+      distribution = self.__export2DBuckets()
+      for index, block in enumerate(distribution):
+        self.__sc.parallelize(distribution) \
+        .saveAsPickleFile(self.__outURI + "/" + str(index) + ".2drdd")
+
   # save only when it is explicitly called
   # def __del__(self):
   #   self.save()
