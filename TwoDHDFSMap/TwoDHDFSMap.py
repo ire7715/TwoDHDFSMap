@@ -1,14 +1,13 @@
 import pandas as pd
 
 class TwoDHDFSMap(object):
-  __BUCKET_SIZE = 101 # prime bucket size is better
 
-  def __init__(self, sc, hdfsURI=None, outURI=None, bucketSize=0):
+  def __init__(self, sc, hdfsURI=None, outURI=None, bucketSize=101):
     self.__hdfsURI = str(hdfsURI) if hdfsURI else None
     self.__sc = sc
     self.__map = dict()
     self.__outURI = str(outURI) if outURI else None
-    self.__BUCKET_SIZE = bucketSize or self.__BUCKET_SIZE
+    self.__BUCKET_SIZE = bucketSize
 
     if self.__hdfsURI:
       self.__slotsRead = [False] * self.__BUCKET_SIZE
@@ -74,7 +73,7 @@ class TwoDHDFSMap(object):
   #   self.save()
 
   def __keyHash(self, key):
-    # TODO define a proper slot size and a proper hash funciton
+    # TODO define a proper slot size and a proper hash function
     return hash(key) % self.__BUCKET_SIZE
 
   def retrieveAll(self):
